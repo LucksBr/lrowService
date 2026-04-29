@@ -15,17 +15,17 @@ export default abstract class AbstractCrudController<
         return this.service
     }
     
-    @Get(":id")
-    getById(@Param('id') id: string): Promise<Entity | null> {
-        return this.getService().getById(Number(id))
-    }
-    
     @Get("/list-all")
     listAll(): Promise<Entity[]> {
         return this.getService().listAll()
     }
 
-    @Post("/save")
+    @Get("/:id")
+    getById(@Param('id') id: string): Promise<Entity | null> {
+        return this.getService().getById(Number(id))
+    }
+    
+    @Post()
     save(@Body() data: CreateDTO): Promise<Entity> {
          return this.getService().save(data)
     }
