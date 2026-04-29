@@ -19,6 +19,16 @@ export default abstract class AbstractTypeOrmCrudRepository<Entity extends Abstr
        return this.getRepository().save(entity)
     }
 
+    async update(id: number, data: DeepPartial<Entity>): Promise<Entity> {
+        const existing = await this.getById(id);
+
+        if(!existing) throw new Error(`Entity with id ${id} not found`)
+
+        const merged = this.getRepository().merge(existing, data)
+
+        return this.getRepository().save(merged);
+    }
+
     async deleteById(id: number): Promise<void> {
         await this.getRepository().delete(id);
     }

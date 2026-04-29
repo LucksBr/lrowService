@@ -9,6 +9,8 @@ export default interface BaseCrudRepositoryInterface<Entity extends AbstractEnti
 
     save(data: DeepPartial<Entity>): Promise<Entity>
 
+    update(id: number, data: DeepPartial<Entity>): Promise<Entity>
+
     deleteById(id: number): Promise<void>
     
 }

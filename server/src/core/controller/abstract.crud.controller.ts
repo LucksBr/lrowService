@@ -1,9 +1,13 @@
-import { Body, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import AbstractEntity from '../model/abstract.entity';
 import BaseCrudServiceInterface from '../service/base.crud.service.interface';
 import { DeepPartial } from 'typeorm';
 
-export default abstract class AbstractCrudController<Entity extends AbstractEntity, CreateDTO extends DeepPartial<Entity>> {
+export default abstract class AbstractCrudController<
+    Entity extends AbstractEntity, 
+    CreateDTO extends DeepPartial<Entity>,
+    UpdateDTO extends DeepPartial<Entity>
+> {
 
     constructor(private service: BaseCrudServiceInterface<Entity>){}
 
@@ -11,7 +15,7 @@ export default abstract class AbstractCrudController<Entity extends AbstractEnti
         return this.service
     }
     
-    @Get("/get-by-id/:id")
+    @Get(":id")
     getById(@Param('id') id: string): Promise<Entity | null> {
         return this.getService().getById(Number(id))
     }
@@ -25,8 +29,13 @@ export default abstract class AbstractCrudController<Entity extends AbstractEnti
     save(@Body() data: CreateDTO): Promise<Entity> {
          return this.getService().save(data)
     }
+
+    @Put(":id")
+    update(@Param('id') id: string, @Body() data: UpdateDTO): Promise<Entity> {
+         return this.getService().update(Number(id), data)
+    }
         
-    @Delete("delete-by-id/:id")
+    @Delete(":id")
     deleteById(@Param('id') id: string): Promise<void> {
         return this.getService().deleteById(Number(id))
     }

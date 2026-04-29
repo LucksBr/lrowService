@@ -21,6 +21,10 @@ export default abstract class AbstractCrudService<Entity extends AbstractEntity>
         return this.getRepository().save(data)
     }
 
+    update(id: number, data: DeepPartial<Entity>): Promise<Entity> {
+        return this.getRepository().update(id, data)
+    }
+
     deleteById(id: number): Promise<void> {
         if (!id) throw new Error('O id deve ser informado.')
 
