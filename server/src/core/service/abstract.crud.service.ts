@@ -17,12 +17,38 @@ export default abstract class AbstractCrudService<Entity extends AbstractEntity>
         return this.getRepository().listAll()
     }
 
-    save(data: DeepPartial<Entity>): Promise<Entity> {
-        return this.getRepository().save(data)
+    validate(data: DeepPartial<Entity>) {}
+
+    beforeSave(data: DeepPartial<Entity>){}
+
+    afterSave(data: Entity) {}
+
+    async save(data: DeepPartial<Entity>): Promise<Entity> {
+        this.beforeSave(data)
+
+        this.validate(data)
+
+        const persistedEntity = await this.getRepository().save(data)
+
+        this.afterSave(persistedEntity)
+
+        return persistedEntity
     }
 
-    update(id: number, data: DeepPartial<Entity>): Promise<Entity> {
-        return this.getRepository().update(id, data)
+    beforeUpdate(data: DeepPartial<Entity>){}
+
+    afterUpdate(data: Entity) {}
+
+    async update(id: number, data: DeepPartial<Entity>): Promise<Entity> {
+        this.beforeUpdate(data)
+
+        this.validate(data)
+
+        const updatedEntity = await this.getRepository().update(id, data)
+
+        this.afterUpdate(updatedEntity)
+
+        return updatedEntity
     }
 
     deleteById(id: number): Promise<void> {
