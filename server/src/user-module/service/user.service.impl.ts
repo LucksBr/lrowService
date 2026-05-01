@@ -4,6 +4,8 @@ import User from "../model/user.entity";
 import UserServiceInterface from "./user.service.interface";
 import { USER_REPOSITORY } from "../repository/user.repository.token";
 import type UserRepositoryInterface from "../repository/interface/user.repository.interface";
+import { DeepPartial } from "typeorm";
+import { ServiceValidateBuilder } from "src/core/validation/service.validate.builder";
 
 
 @Injectable()
@@ -13,4 +15,10 @@ export default class UserServiceImpl extends AbstractCrudService<User> implement
         super(userRepository)
     }
 
+    validate(data: DeepPartial<User>) {
+        ServiceValidateBuilder.create()
+        .fieldNotEmpty(data.email, "email")
+        .fieldNotEmpty(data.password, "password")
+        .throwIfInvalid()
+    }
 }
