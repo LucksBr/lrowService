@@ -3,7 +3,7 @@ import AbstractEntity from '../model/abstract.entity';
 
 export default interface BaseCrudServiceInterface<Entity extends AbstractEntity> {
 
-    getById(id: number): Promise<Entity | null>
+    getById(id: number): Promise<Entity>
         
     listAll(): Promise<Entity[]>
     

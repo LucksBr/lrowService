@@ -2,59 +2,79 @@ import BaseCrudRepositoryInterface from 'src/core/repository/base.crud.repositor
 import { DeepPartial } from 'typeorm';
 import AbstractEntity from '../model/abstract.entity';
 import BaseCrudServiceInterface from './base.crud.service.interface';
+import { ServiceException } from '../exceptions/service.exception';
 
 export default abstract class AbstractCrudService<Entity extends AbstractEntity> implements BaseCrudServiceInterface<Entity> {
     
     constructor(private repository: BaseCrudRepositoryInterface<Entity>) {}
 
-    getById(id: number): Promise<Entity | null> {
-        if (!id) throw new Error('O id deve ser informado.')
-
-        return this.getRepository().getById(id)
+    getById(id: number): Promise<Entity> {
+        return this.getByIdOrFail(id)
     }
 
     listAll(): Promise<Entity[]> {
         return this.getRepository().listAll()
     }
 
-    validate(data: DeepPartial<Entity>) {}
+    abstract validate(data: DeepPartial<Entity>)
 
-    beforeSave(data: DeepPartial<Entity>){}
+    beforeSave?(data: DeepPartial<Entity>): Promise<void> | void
 
-    afterSave(data: Entity) {}
+    afterSave?(data: Entity): Promise<void> | void
 
     async save(data: DeepPartial<Entity>): Promise<Entity> {
-        this.beforeSave(data)
-
         this.validate(data)
+        
+        await this.beforeSave?.(data)
 
         const persistedEntity = await this.getRepository().save(data)
 
-        this.afterSave(persistedEntity)
+        await this.afterSave?.(persistedEntity)
 
         return persistedEntity
     }
 
-    beforeUpdate(data: DeepPartial<Entity>){}
+    beforeUpdate?(data: DeepPartial<Entity>): Promise<void> | void
 
-    afterUpdate(data: Entity) {}
+    afterUpdate?(data: Entity): Promise<void> | void
 
     async update(id: number, data: DeepPartial<Entity>): Promise<Entity> {
-        this.beforeUpdate(data)
+        const savedEntity = await this.getByIdOrFail(id)
 
         this.validate(data)
+        await this.beforeUpdate?.(data)
 
-        const updatedEntity = await this.getRepository().update(id, data)
+        const updatedEntity = await this.getRepository().update(savedEntity, data)
 
-        this.afterUpdate(updatedEntity)
+        await this.afterUpdate?.(updatedEntity)
 
         return updatedEntity
     }
 
-    deleteById(id: number): Promise<void> {
-        if (!id) throw new Error('O id deve ser informado.')
+    beforeDelete?(data: Entity): Promise<void> | void
 
-        return this.getRepository().deleteById(id)
+    afterDelete?(data: Entity): Promise<void> | void
+
+    async deleteById(id: number): Promise<void> {
+        const entity = await this.getByIdOrFail(id)
+
+        await this.beforeDelete?.(entity)
+
+        this.getRepository().deleteById(id)
+
+        await this.afterDelete?.(entity)
+    }
+
+    protected async getByIdOrFail(id: number): Promise<Entity> {
+        if (!Number.isInteger(id) || id <= 0) {
+            throw new ServiceException('O id deve ser informado');
+        }
+
+        const entity = await this.getRepository().getById(id);
+
+        if (!entity) throw new ServiceException(`A entidade de id: ${id} não foi encontrada`);
+
+        return entity;
     }
 
     getRepository() {
