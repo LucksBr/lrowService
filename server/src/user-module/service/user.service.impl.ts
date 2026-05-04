@@ -6,6 +6,7 @@ import { USER_REPOSITORY } from "../repository/user.repository.token";
 import type UserRepositoryInterface from "../repository/interface/user.repository.interface";
 import { DeepPartial } from "typeorm";
 import { ServiceValidateBuilder } from "src/core/validation/service.validate.builder";
+import * as argon2 from "argon2";
 
 
 @Injectable()
@@ -21,4 +22,11 @@ export default class UserServiceImpl extends AbstractCrudService<User> implement
         .fieldNotEmpty(data.password, "password")
         .throwIfInvalid()
     }
+
+    async beforeSave(data: DeepPartial<User>): Promise<void> {
+        if(data.password){
+            data.password = await argon2.hash(data.password)
+        }
+    }
+
 }
