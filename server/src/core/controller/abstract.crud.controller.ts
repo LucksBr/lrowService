@@ -6,7 +6,8 @@ import { DeepPartial } from 'typeorm';
 export default abstract class AbstractCrudController<
     Entity extends AbstractEntity, 
     CreateDTO extends DeepPartial<Entity>,
-    UpdateDTO extends DeepPartial<Entity>
+    UpdateDTO extends DeepPartial<Entity>,
+    ResponseDTO
 > {
 
     constructor(private service: BaseCrudServiceInterface<Entity>){}
@@ -14,25 +15,31 @@ export default abstract class AbstractCrudController<
     getService(){
         return this.service
     }
+
+    protected abstract toResponse(entity: Entity): ResponseDTO
     
     @Get("/list-all")
-    listAll(): Promise<Entity[]> {
-        return this.getService().listAll()
+    async listAll(): Promise<ResponseDTO[]> {
+        const entities = await this.getService().listAll()
+        return entities.map(e => this.toResponse(e))
     }
 
     @Get("/:id")
-    getById(@Param('id') id: string): Promise<Entity | null> {
-        return this.getService().getById(Number(id))
+    async getById(@Param('id') id: string): Promise<ResponseDTO> {
+        const entity = await this.getService().getById(Number(id))
+        return this.toResponse(entity)
     }
     
     @Post()
-    save(@Body() data: CreateDTO): Promise<Entity> {
-         return this.getService().save(data)
+    async save(@Body() data: CreateDTO): Promise<ResponseDTO> {
+        const entity = await this.getService().save(data)
+        return this.toResponse(entity)
     }
 
     @Put(":id")
-    update(@Param('id') id: string, @Body() data: UpdateDTO): Promise<Entity> {
-         return this.getService().update(Number(id), data)
+    async update(@Param('id') id: string, @Body() data: UpdateDTO): Promise<ResponseDTO> {
+        const entity = await this.getService().update(Number(id), data)
+         return this.toResponse(entity)
     }
         
     @Delete(":id")

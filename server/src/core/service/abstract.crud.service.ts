@@ -18,9 +18,9 @@ export default abstract class AbstractCrudService<Entity extends AbstractEntity>
 
     abstract validate(data: DeepPartial<Entity>)
 
-    beforeSave?(data: DeepPartial<Entity>): Promise<void> | void
+    async beforeSave?(data: DeepPartial<Entity>): Promise<void>
 
-    afterSave?(data: Entity): Promise<void> | void
+    async afterSave?(data: Entity): Promise<void>
 
     async save(data: DeepPartial<Entity>): Promise<Entity> {
         this.validate(data)
@@ -34,15 +34,15 @@ export default abstract class AbstractCrudService<Entity extends AbstractEntity>
         return persistedEntity
     }
 
-    beforeUpdate?(data: DeepPartial<Entity>): Promise<void> | void
+    async beforeUpdate?(entity: Entity, data: DeepPartial<Entity>): Promise<void>
 
-    afterUpdate?(data: Entity): Promise<void> | void
+    async afterUpdate?(data: Entity): Promise<void>
 
     async update(id: number, data: DeepPartial<Entity>): Promise<Entity> {
         const savedEntity = await this.getByIdOrFail(id)
 
         this.validate(data)
-        await this.beforeUpdate?.(data)
+        await this.beforeUpdate?.(savedEntity, data)
 
         const updatedEntity = await this.getRepository().update(savedEntity, data)
 
@@ -51,9 +51,9 @@ export default abstract class AbstractCrudService<Entity extends AbstractEntity>
         return updatedEntity
     }
 
-    beforeDelete?(data: Entity): Promise<void> | void
+    async beforeDelete?(data: Entity): Promise<void> 
 
-    afterDelete?(data: Entity): Promise<void> | void
+    async afterDelete?(data: Entity): Promise<void>
 
     async deleteById(id: number): Promise<void> {
         const entity = await this.getByIdOrFail(id)
