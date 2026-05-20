@@ -1,4 +1,4 @@
-import { Controller, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Inject, Post } from '@nestjs/common';
 import AbstractCrudController from 'src/core/controller/abstract.crud.controller';
 import User from './model/user.entity';
 import CreateUserDTO from './model/dto/create.user.dto';
@@ -6,6 +6,7 @@ import { USER_SERVICE } from './service/user.service.token';
 import type UserServiceInterface from './service/user.service.interface';
 import UpdateUserDTO from './model/dto/update.user.dto';
 import ResponseUserDTO from './model/dto/response.user.dto';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('user')
 export default class UserController extends AbstractCrudController<User,CreateUserDTO, UpdateUserDTO, ResponseUserDTO> {
@@ -16,6 +17,13 @@ export default class UserController extends AbstractCrudController<User,CreateUs
 
     protected toResponse(entity: User): ResponseUserDTO {
         return new ResponseUserDTO(entity.id,entity.email)
+    }
+
+    @Public()
+    @Post()
+    async save(@Body() data: CreateUserDTO): Promise<ResponseUserDTO> {
+        const entity = await this.getService().save(data)
+        return this.toResponse(entity)
     }
     
 }
