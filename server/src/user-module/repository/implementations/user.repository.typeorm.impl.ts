@@ -12,4 +12,8 @@ export default class UserRepositoryTypeOrmImpl extends AbstractTypeOrmCrudReposi
         super(repository);
     }
 
+    findByEmail(email: string): Promise<User | null> {
+       return this.getRepository().findOne({ where: {email}});
+    }
+
 }

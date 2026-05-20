@@ -29,4 +29,8 @@ export default class UserServiceImpl extends AbstractCrudService<User> implement
         }
     }
 
+    findByEmail(email: string): Promise<User | null> {
+        return this.userRepository.findByEmail(email)
+    }
+
 }
